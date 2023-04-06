@@ -73,20 +73,20 @@ namespace Mapper.Expressions
                         var configuration = _mappingConfiguration?.Configurations
                             .FirstOrDefault(x => x.Source == sourceProp.PropertyType && x.Dest == destProp.PropertyType);
 
-                        if (configuration is not null)
-                        {
-                            var typePairNested = new TypePair(configuration.Source, configuration.Dest);
-                            var nestedParam = Property(parameter, typePairNested.SourceType.Name);
-                            var mapBlock = CreateMap(typePairNested, sourceParameter, nestedParam);
-                            var lamda = Lambda(mapBlock, sourceParameter);
-                            assignValue = Assign(
-                                PropertyOrField(result, destProp.Name),
-                                Invoke(lamda, sourceParameter));
-                        }
+                        var source = configuration?.Source ?? sourceProp.PropertyType;
+                        var dest = configuration?.Dest ?? destProp.PropertyType;
+                        
+                        var typePairNested = new TypePair(source, dest);
+                        var nestedParam = Property(parameter, typePairNested.SourceType.Name);
+                        var mapBlock = CreateMap(typePairNested, sourceParameter, nestedParam);
+                        var lamda = Lambda(mapBlock, sourceParameter);
+                        assignValue = Assign(
+                            PropertyOrField(result, destProp.Name),
+                            Invoke(lamda, sourceParameter));
                     }
-                    else if (sourceProp.CanRead == true && destProp.CanWrite && sourceProp.PropertyType == destProp.PropertyType)
-                    {
 
+                    if (assignValue is null && sourceProp.CanRead == true && destProp.CanWrite)
+                    {
                         assignValue = Assign(
                                 PropertyOrField(result, destProp.Name),
                                 PropertyOrField(parameter, sourceProp.Name));
@@ -124,8 +124,6 @@ namespace Mapper.Expressions
             var lambda = Lambda<Func<TSource, TDest>>(body, param).Compile();
             return s => lambda((TSource)s)!;
         }
-
-
 
     }
 }

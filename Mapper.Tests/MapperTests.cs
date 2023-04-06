@@ -83,11 +83,9 @@ namespace Mapper.Tests
                 .ForMember(x => x.Name, x => x.Ignore())
                 .Build();
 
-            var adressTypeConfiguration = configuration.CreateMap<Address, AddressDto>().Build();
-            var cityTypeConfiguration = configuration.CreateMap<City, CityDto>().Build();
 
             var mapper = new Expressions.Mapper(
-                new MappingConfiguration(new List<TypeMappingConfiguration> { personTypeConfiguration, adressTypeConfiguration, cityTypeConfiguration }));
+                new MappingConfiguration(new List<TypeMappingConfiguration> { personTypeConfiguration }));
             var result = mapper.Map<PersonDto>(person);
             Assert.AreEqual(fullName, result.FullName);
             Assert.IsNull(result.Name);
